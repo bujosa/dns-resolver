@@ -1,5 +1,12 @@
+use serde::Deserialize;
+use warp::Filter;
 use std::net::IpAddr;
 use trust_dns_resolver::{config::ResolverConfig, TokioAsyncResolver};
+
+#[derive(Deserialize)]
+struct UrlBody {
+    url: String,
+}
 
 async fn resolve_dns(hostname: &str, resolver: &TokioAsyncResolver) -> Option<IpAddr> {
     match resolver.lookup_ip(hostname).await {
@@ -10,20 +17,30 @@ async fn resolve_dns(hostname: &str, resolver: &TokioAsyncResolver) -> Option<Ip
         }
     }
 }
+
+async fn handle_resolve(
+    body: UrlBody,
+    resolver: TokioAsyncResolver,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let result = resolve_dns(&body.url, &resolver).await;
+    match result {
+        Some(ip) => Ok(format!("The IP address of {} is: {}", body.url, ip)),
+        None => Ok(format!("Could not resolve the IP address for {}", body.url)),
+    }
+}
+
 #[tokio::main]
 async fn main() {
     // Create a DNS resolver
     let resolver = TokioAsyncResolver::tokio(ResolverConfig::default(), Default::default());
 
-    // Define the domain name you want to resolve
-    let domain_name = "www.google.com";
+    let resolver = warp::any().map(move || resolver.clone());
 
-    // Resolve the domain name and get the IP address
-    let result = resolve_dns(domain_name, &resolver).await;
+    let resolve_route = warp::post()
+        .and(warp::path("resolve"))
+        .and(warp::body::json())
+        .and(resolver.clone())
+        .and_then(handle_resolve);
 
-    // Handle the result
-    match result {
-        Some(ip) => println!("The IP address of {} is: {}", domain_name, ip),
-        None => println!("Could not resolve the IP address for {}", domain_name),
-    }
+    warp::serve(resolve_route).run(([127, 0, 0, 1], 3030)).await;
 }
