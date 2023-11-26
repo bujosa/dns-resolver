@@ -1,0 +1,11 @@
+# Ignore Git directory
+.git/
+
+# Ignore Rust target directory
+target/
+
+# Ignore .env files
+.env
+
+# Ignore images directory
+images/
