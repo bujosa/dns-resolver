@@ -1,21 +1,11 @@
+use dns_resolver::service::dns_resolver::resolve_dns;
 use serde::Deserialize;
-use warp::Filter;
-use std::net::IpAddr;
 use trust_dns_resolver::{config::ResolverConfig, TokioAsyncResolver};
+use warp::Filter;
 
 #[derive(Deserialize)]
 struct UrlBody {
     url: String,
-}
-
-async fn resolve_dns(hostname: &str, resolver: &TokioAsyncResolver) -> Option<IpAddr> {
-    match resolver.lookup_ip(hostname).await {
-        Ok(response) => response.iter().next().map(|ip| ip),
-        Err(err) => {
-            eprintln!("Error resolving DNS: {:?}", err);
-            None
-        }
-    }
 }
 
 async fn handle_resolve(
