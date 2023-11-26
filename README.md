@@ -37,4 +37,4 @@ This project uses the following crates:
 
 Below is the architecture diagram of the DNS Resolver:
 
-![Architecture Diagram](./images/architecture.png)
+![Architecture Diagram](./images/architecture.svg)
