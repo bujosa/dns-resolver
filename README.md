@@ -33,6 +33,8 @@ This project uses the following crates:
 - `warp` for web server functionality.
 - `serde` for serialization and deserialization.
 
-## Future Improvements
-- Allow the user to input the domain name as a command-line argument.
-- Implement more robust error handling.
+## Architecture Diagram
+
+Below is the architecture diagram of the DNS Resolver:
+
+![Architecture Diagram](./images/architecture.png)
